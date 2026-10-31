@@ -24,17 +24,34 @@ router.patch(
 );
 router.delete("/deleteMe", userController.deleteMe);
 
-router.use(authController.restrictTo("admin"));
+// Only the admin can add a new member of staff
+router.post(
+  "/staff",
+  authController.restrictTo("admin"),
+  userController.createStaff,
+);
 
 router
   .route("/")
-  .get(userController.getAllUsers)
-  .post(userController.createUser);
+  .get(
+    authController.restrictTo("admin", "staff"),
+    userController.restrictStaffToCustomers,
+    userController.getAllUsers,
+  )
+  .post(authController.restrictTo("admin"), userController.createUser);
 
 router
   .route("/:id")
-  .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+  .get(
+    authController.restrictTo("admin", "staff"),
+    userController.restrictStaffToCustomers,
+    userController.getUser,
+  )
+  .patch(
+    authController.restrictTo("admin"),
+    userController.filterUserBody,
+    userController.updateUser,
+  )
+  .delete(authController.restrictTo("admin"), userController.deleteUser);
 
 export default router;
