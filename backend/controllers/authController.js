@@ -39,13 +39,23 @@ export const signup = catchAsync(async (req, res) => {
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
+    phone: req.body.phone,
+    company: req.body.company,
+    address: req.body.address,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    // Anyone signing up is a customer, role can never come from the body
+    role: "customer",
   });
 
   const url = `${req.protocol}://${req.get("host")}/me`;
   // console.log(url);
-  await new Email(newUser, url).sendWelcome();
+  // The account already exists, so a mail problem must not fail the sign-up
+  try {
+    await new Email(newUser, url).sendWelcome();
+  } catch (err) {
+    console.error("Welcome email failed:", err.message);
+  }
 
   createSendToken(newUser, 201, req, res);
 });
@@ -159,6 +169,17 @@ export const restrictTo = (...roles) => {
       return next(
         new AppError("You do not have permission to perform this action", 403),
       );
+    }
+
+    next();
+  };
+};
+
+// Customers only ever see their own records (used with factory.getAll/getOne)
+export const restrictToOwn = (field = "customer") => {
+  return (req, res, next) => {
+    if (req.user.role === "customer") {
+      req.baseFilter = { ...req.baseFilter, [field]: req.user._id };
     }
 
     next();

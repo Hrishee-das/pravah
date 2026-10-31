@@ -16,6 +16,21 @@ export const deleteOne = (Model) =>
     });
   });
 
+// Soft delete: keeps old subscriptions and invoices pointing at a valid record
+export const archiveOne = (Model) =>
+  catchAsync(async (req, res, next) => {
+    const doc = await Model.findByIdAndUpdate(req.params.id, { active: false });
+
+    if (!doc) {
+      return next(new AppError("No document found with that ID", 404));
+    }
+
+    res.status(204).json({
+      status: "success",
+      data: null,
+    });
+  });
+
 export const updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
@@ -49,7 +64,10 @@ export const createOne = (Model) =>
 
 export const getOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
-    let query = Model.findById(req.params.id);
+    // req.baseFilter limits what the logged in user is allowed to see
+    let query = req.baseFilter
+      ? Model.findOne({ _id: req.params.id, ...req.baseFilter })
+      : Model.findById(req.params.id);
     if (popOptions) query = query.populate(popOptions);
     const doc = await query;
 
@@ -65,24 +83,31 @@ export const getOne = (Model, popOptions) =>
     });
   });
 
-export const getAll = (Model) =>
+export const getAll = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
-    // To allow for nested GET reviews on tour (hack)
-    let filter = {};
-    if (req.params.tourId) filter = { tour: req.params.tourId };
-
-    const features = new APIFeatures(Model.find(filter), req.query)
+    const features = new APIFeatures(Model.find(), req.query)
       .filter()
       .sort()
       .limitFields()
       .paginate();
+
+    // req.baseFilter always wins over anything sent in the query string
+    if (req.baseFilter) {
+      features.query = features.query.and([req.baseFilter]);
+    }
+    if (popOptions) features.query = features.query.populate(popOptions);
+
     // const doc = await features.query.explain();
-    const doc = await features.query;
+    const [doc, total] = await Promise.all([
+      features.query,
+      Model.countDocuments(features.query.getFilter()),
+    ]);
 
     // SEND RESPONSE
     res.status(200).json({
       status: "success",
       results: doc.length,
+      total,
       data: {
         data: doc,
       },

@@ -1,3 +1,4 @@
+import fs from "fs/promises";
 import multer from "multer";
 import sharp from "sharp";
 import User from "./../models/userModel.js";
@@ -5,15 +6,6 @@ import catchAsync from "./../utils/catchAsync.js";
 import AppError from "./../utils/appError.js";
 import * as factory from "./handlerFactory.js";
 
-// const multerStorage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, 'public/img/users');
-//   },
-//   filename: (req, file, cb) => {
-//     const ext = file.mimetype.split('/')[1];
-//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
-//   }
-// });
 const multerStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, cb) => {
@@ -36,6 +28,7 @@ export const resizeUserPhoto = catchAsync(async (req, res, next) => {
 
   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
 
+  await fs.mkdir("public/img/users", { recursive: true });
   await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat("jpeg")
@@ -70,7 +63,14 @@ export const updateMe = catchAsync(async (req, res, next) => {
   }
 
   // 2) Filtered out unwanted fields names that are not allowed to be updated
-  const filteredBody = filterObj(req.body, "name", "email");
+  const filteredBody = filterObj(
+    req.body,
+    "name",
+    "email",
+    "phone",
+    "company",
+    "address",
+  );
   if (req.file) filteredBody.photo = req.file.filename;
 
   // 3) Update user document
@@ -95,6 +95,60 @@ export const deleteMe = catchAsync(async (req, res, next) => {
     data: null,
   });
 });
+
+// Staff can only look at customers, never at other staff or admins
+export const restrictStaffToCustomers = (req, res, next) => {
+  if (req.user.role === "staff") {
+    req.baseFilter = { ...req.baseFilter, role: "customer" };
+  }
+
+  next();
+};
+
+// Only an admin can add a new member of staff
+export const createStaff = catchAsync(async (req, res, next) => {
+  const newStaff = await User.create({
+    name: req.body.name,
+    email: req.body.email,
+    phone: req.body.phone,
+    password: req.body.password,
+    passwordConfirm: req.body.passwordConfirm,
+    role: "staff",
+  });
+
+  // Remove password from output
+  newStaff.password = undefined;
+
+  res.status(201).json({
+    status: "success",
+    data: {
+      user: newStaff,
+    },
+  });
+});
+
+export const filterUserBody = (req, res, next) => {
+  if (req.body.password || req.body.passwordConfirm) {
+    return next(
+      new AppError(
+        "This route is not for password updates. Please use /updateMyPassword.",
+        400,
+      ),
+    );
+  }
+
+  req.body = filterObj(
+    req.body,
+    "name",
+    "email",
+    "phone",
+    "company",
+    "address",
+    "role",
+    "active",
+  );
+  next();
+};
 
 export const createUser = (req, res) => {
   res.status(500).json({

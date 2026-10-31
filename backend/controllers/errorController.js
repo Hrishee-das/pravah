@@ -56,6 +56,7 @@ export default (err, req, res, next) => {
   }
 
   let error = { ...err };
+  error.name = err.name;
   error.message = err.message;
 
   if (error.name === "CastError") error = handleCastErrorDB(error);
