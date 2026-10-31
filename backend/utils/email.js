@@ -30,7 +30,7 @@ class Email {
     this.to = user.email;
     this.firstName = user.name.trim().split(/\s+/)[0];
     this.url = url;
-    this.from = `Jonas Schmedtmann <${process.env.EMAIL_FROM}>`;
+    this.from = `Pravah <${process.env.EMAIL_FROM}>`;
   }
 
   newTransport() {
