@@ -35,7 +35,7 @@ const createSendToken = (user, statusCode, req, res) => {
   });
 };
 
-export const signup = catchAsync(async (req, res, next) => {
+export const signup = catchAsync(async (req, res) => {
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
@@ -193,7 +193,10 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
 
     return next(
-      new AppError("There was an error sending the email. Try again later!", 500),
+      new AppError(
+        "There was an error sending the email. Try again later!",
+        500,
+      ),
     );
   }
 });
