@@ -19,15 +19,26 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "default.jpg",
   },
+  phone: String,
+  company: String,
+  address: String,
+  // admin: whole system, staff: day-to-day work, customer: own portal only
   role: {
     type: String,
-    enum: ["user", "guide", "lead-guide", "admin"],
-    default: "user",
+    enum: ["customer", "staff", "admin"],
+    default: "customer",
   },
   password: {
     type: String,
     required: [true, "Please provide a password"],
-    minlength: 8,
+    minlength: [9, "Password must be more than 8 characters"],
+    validate: {
+      validator: function (el) {
+        return /[A-Z]/.test(el) && /[a-z]/.test(el) && /[^A-Za-z0-9]/.test(el);
+      },
+      message:
+        "Password must contain an uppercase letter, a lowercase letter and a special character",
+    },
     select: false,
   },
   passwordConfirm: {
