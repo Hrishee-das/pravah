@@ -5,13 +5,7 @@ import { Spinner } from "./ui.jsx";
 import { Login, Signup, Forgot, Reset } from "./pages/AuthPages.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Home from "./pages/Home.jsx";
-import {
-  Products,
-  Plans,
-  Taxes,
-  Discounts,
-  Templates,
-} from "./pages/Catalog.jsx";
+import { Products, Plans, Taxes, Discounts, Templates } from "./pages/Catalog.jsx";
 import Subscriptions from "./pages/Subscriptions.jsx";
 import SubscriptionDetail from "./pages/SubscriptionDetail.jsx";
 import Invoices from "./pages/Invoices.jsx";
@@ -55,62 +49,13 @@ export default function App() {
         <Route path="invoices/:id" element={<InvoiceDetail />} />
         <Route path="payments" element={<Payments />} />
         <Route path="profile" element={<Profile />} />
-        <Route
-          path="products"
-          element={
-            <Guard roles={team}>
-              <Products />
-            </Guard>
-          }
-        />
-        <Route
-          path="plans"
-          element={
-            <Guard roles={team}>
-              <Plans />
-            </Guard>
-          }
-        />
-        <Route
-          path="taxes"
-          element={
-            <Guard roles={team}>
-              <Taxes />
-            </Guard>
-          }
-        />
-        <Route
-          path="discounts"
-          element={
-            <Guard roles={team}>
-              <Discounts />
-            </Guard>
-          }
-        />
-        <Route
-          path="templates"
-          element={
-            <Guard roles={team}>
-              <Templates />
-            </Guard>
-          }
-        />
-        <Route
-          path="customers"
-          element={
-            <Guard roles={team}>
-              <People kind="customer" />
-            </Guard>
-          }
-        />
-        <Route
-          path="staff"
-          element={
-            <Guard roles={["admin"]}>
-              <People kind="staff" />
-            </Guard>
-          }
-        />
+        <Route path="products" element={<Guard roles={team}><Products /></Guard>} />
+        <Route path="plans" element={<Guard roles={team}><Plans /></Guard>} />
+        <Route path="taxes" element={<Guard roles={team}><Taxes /></Guard>} />
+        <Route path="discounts" element={<Guard roles={team}><Discounts /></Guard>} />
+        <Route path="templates" element={<Guard roles={team}><Templates /></Guard>} />
+        <Route path="customers" element={<Guard roles={team}><People kind="customer" /></Guard>} />
+        <Route path="staff" element={<Guard roles={["admin"]}><People kind="staff" /></Guard>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -1,4 +1,4 @@
-const BASE = "/api/v1".replace(/\/$/, "");
+const BASE = (import.meta.env.VITE_API_URL || "/api/v1").replace(/\/$/, "");
 
 export const getToken = () => localStorage.getItem("token");
 export const setToken = (t) =>
