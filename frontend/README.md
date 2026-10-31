@@ -1,4 +1,4 @@
-# Brightloop Subscription Management – Frontend
+# Pravah Subscription Management – Frontend
 
 Vite + React (JavaScript) + Tailwind CSS. Talks to the `backend_test` Express API (`/api/v1`).
 

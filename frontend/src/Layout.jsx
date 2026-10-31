@@ -21,13 +21,13 @@ export default function Layout() {
   return (
     <div className="min-h-screen md:flex">
       <header className="flex items-center justify-between bg-indigo-700 px-4 py-3 text-white md:hidden">
-        <span className="font-semibold">Brightloop</span>
+        <span className="font-semibold">Pravah</span>
         <button onClick={() => setOpen(!open)}>☰</button>
       </header>
       <aside
         className={`${open ? "block" : "hidden"} w-full shrink-0 bg-white md:block md:min-h-screen md:w-56 md:border-r`}
       >
-        <div className="hidden px-4 py-4 text-lg font-bold text-indigo-700 md:block">Brightloop</div>
+        <div className="hidden px-4 py-4 text-lg font-bold text-indigo-700 md:block">Pravah</div>
         <nav className="flex flex-col gap-0.5 px-2 pb-2">
           {links.map(([to, text]) => (
             <NavLink

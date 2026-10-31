@@ -8,7 +8,7 @@ function Shell({ title, children, footer }) {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-sm rounded-lg border bg-white p-6">
-        <h1 className="mb-1 text-xl font-bold text-indigo-700">Brightloop</h1>
+        <h1 className="mb-1 text-xl font-bold text-indigo-700">Pravah</h1>
         <p className="mb-4 text-sm text-slate-500">{title}</p>
         {children}
         <div className="mt-4 text-center text-sm">{footer}</div>
