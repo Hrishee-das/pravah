@@ -96,15 +96,19 @@ export function Forgot() {
   const [email, setEmail] = useState("");
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
+  const [busy, setBusy] = useState(false);
   const submit = async (e) => {
     e.preventDefault();
     setErr("");
     setOk("");
+    setBusy(true);
     try {
       const r = await api.post("/users/forgotPassword", { email });
       setOk(r.message || "A reset link was sent to your email.");
     } catch (e2) {
       setErr(e2.message);
+    } finally {
+      setBusy(false);
     }
   };
   return (
@@ -113,7 +117,9 @@ export function Forgot() {
         <Error_>{err}</Error_>
         <Notice>{ok}</Notice>
         <Field label="Registered email"><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
-        <Button type="submit" className="w-full">Send reset link</Button>
+        <Button type="submit" disabled={busy} className="w-full">
+          {busy ? "Sending reset link..." : "Send reset link"}
+        </Button>
       </form>
     </Shell>
   );
@@ -125,11 +131,18 @@ export function Reset() {
   const { setUser } = useAuth();
   const [f, set] = useForm({ password: "", passwordConfirm: "" });
   const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
   const submit = async (e) => {
     e.preventDefault();
     setErr("");
+    setBusy(true);
     try {
-      const r = await api.patch(`/users/resetPassword/${token}`, f);
+      const resetToken = token?.trim();
+      if (!resetToken) throw new Error("The password reset link is invalid.");
+      const r = await api.patch(
+        `/users/resetPassword/${encodeURIComponent(resetToken)}`,
+        f,
+      );
       if (r.token) {
         setToken(r.token);
         setUser(r.data.user);
@@ -137,6 +150,8 @@ export function Reset() {
       nav("/");
     } catch (e2) {
       setErr(e2.message);
+    } finally {
+      setBusy(false);
     }
   };
   return (
@@ -145,7 +160,9 @@ export function Reset() {
         <Error_>{err}</Error_>
         <Field label="New password" hint={PW_HINT}><Input type="password" required value={f.password} onChange={set("password")} /></Field>
         <Field label="Confirm password"><Input type="password" required value={f.passwordConfirm} onChange={set("passwordConfirm")} /></Field>
-        <Button type="submit" className="w-full">Save password</Button>
+        <Button type="submit" disabled={busy} className="w-full">
+          {busy ? "Saving password..." : "Save password"}
+        </Button>
       </form>
     </Shell>
   );

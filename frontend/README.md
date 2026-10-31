@@ -8,8 +8,8 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 Start the backend first (default `http://localhost:5000`). In dev, Vite proxies `/api` to it,
-so no CORS setup is needed. For a production build set `VITE_API_URL` (see `.env.example`)
-to the full backend URL and run `npm run build`.
+so no CORS setup is needed. For a production build set `VITE_API_URL` to the full backend URL
+and `FRONTEND_URL` in the backend environment to the public frontend URL, then run `npm run build`.
 
 ## What's inside
 - **Everyone:** sign up, log in, forgot / reset password (`/reset-password/:token`), profile.
@@ -18,7 +18,7 @@ to the full backend URL and run `npm run build`.
 - **Admin:** everything above plus products (with variants), plans, taxes, discounts, quotation templates and adding staff.
 - **Dashboard:** active subscriptions, MRR/ARR, revenue, outstanding, overdue (with aging), recent payments, date filters.
 
-## Note on the password reset email
-The backend emails a link to its own URL (`/api/v1/users/resetPassword/:token`).
-Point that link to the frontend instead, i.e. `http://localhost:5173/reset-password/<token>`
-(change `resetURL` in `authController.js`), or open that frontend URL by hand with the token from the email.
+## Password reset email
+The backend sends users to the frontend reset page (`/reset-password/:token`). Set `FRONTEND_URL`
+in the backend environment for production; it defaults to `http://localhost:5173` in development.
+The frontend then submits the token to the backend reset endpoint.
