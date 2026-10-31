@@ -15,11 +15,19 @@ const renderTemplate = (template, data) => {
   const subject = escapeHtml(data.subject);
 
   if (template === "welcome") {
-    return `<main><h1>${subject}</h1><p>Hi ${firstName},</p><p>Welcome to our family!</p><p><a href="${url}">Visit your account</a></p></main>`;
+    return `<main><h1>${subject}</h1><p>Hi ${firstName},</p><p>Welcome to Brightloop!</p><p><a href="${url}">Visit your account</a></p></main>`;
   }
 
   if (template === "passwordReset") {
     return `<main><h1>${subject}</h1><p>Hi ${firstName},</p><p>Submit a new password using this link:</p><p><a href="${url}">Reset your password</a></p><p>This link expires in 10 minutes.</p></main>`;
+  }
+
+  if (template === "invoice") {
+    const invoiceNumber = escapeHtml(data.invoiceNumber);
+    const total = escapeHtml(data.total);
+    const dueDate = escapeHtml(data.dueDate);
+
+    return `<main><h1>${subject}</h1><p>Hi ${firstName},</p><p>Your invoice ${invoiceNumber} for ${total} is ready. It is due on ${dueDate}.</p><p><a href="${url}">View invoice</a></p></main>`;
   }
 
   throw new Error(`Unknown email template: ${template}`);
@@ -30,7 +38,7 @@ class Email {
     this.to = user.email;
     this.firstName = user.name.trim().split(/\s+/)[0];
     this.url = url;
-    this.from = `Pravah <${process.env.EMAIL_FROM}>`;
+    this.from = `Brightloop <${process.env.EMAIL_FROM}>`;
   }
 
   newTransport() {
@@ -56,12 +64,13 @@ class Email {
   }
 
   // Send the actual email
-  async send(template, subject) {
+  async send(template, subject, extraData = {}) {
     // 1) Render HTML from the built-in template
     const html = renderTemplate(template, {
       firstName: this.firstName,
       url: this.url,
       subject,
+      ...extraData,
     });
 
     // 2) Define email options
@@ -78,7 +87,15 @@ class Email {
   }
 
   async sendWelcome() {
-    await this.send("welcome", "Welcome to the Natours Family!");
+    await this.send("welcome", "Welcome to Brightloop!");
+  }
+
+  async sendInvoice(invoice) {
+    await this.send("invoice", `Invoice ${invoice.number} from Brightloop`, {
+      invoiceNumber: invoice.number,
+      total: invoice.total.toFixed(2),
+      dueDate: invoice.dueDate.toDateString(),
+    });
   }
 
   async sendPasswordReset() {
